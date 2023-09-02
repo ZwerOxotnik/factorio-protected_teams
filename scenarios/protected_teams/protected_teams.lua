@@ -941,8 +941,8 @@ end
 
 local function add_remote_interface()
 	-- https://lua-api.factorio.com/latest/LuaRemote.html
-	remote.remove_interface("trading_system") -- For safety
-	remote.add_interface("trading_system", {
+	remote.remove_interface("protected_teams") -- For safety
+	remote.add_interface("protected_teams", {
 		get_mod_data = function() return _mod_data end,
 		get_internal_data = function(name) return _mod_data[name] end,
 		clear_invalid_data = clear_invalid_data,
