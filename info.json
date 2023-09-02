@@ -1,0 +1,17 @@
+{
+	"name": "protected_teams",
+	"version": "0.0.1",
+	"factorio_version": "1.1",
+	"title": "Protected teams [extension for EasyAPI][PRE-ALPHA]",
+	"author": "ZwerOxotnik",
+	"contact": "zweroxotnik@gmail.com, Discord:ZwerOxotnik",
+	"homepage": "https://www.reddit.com/r/ZwerOxotnik/",
+	"description": "Adds various protections to protect bases from other players.",
+	"dependencies": [
+		"EasyAPI >= 0.11.6",
+		"? BTeams",
+		"? zk-lib",
+		"? gvv",
+		"? anti_blueprint_spam"
+	]
+}
