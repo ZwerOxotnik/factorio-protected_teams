@@ -335,6 +335,8 @@ end
 ---@param force_index uint
 function destroy_team_base_rendering(force_index)
 	local rendering_ids = _main_base_rendering[force_index]
+	if not rendering_ids then return end
+
 	for i=1, 8 do
 		local id = rendering_ids[i]
 		if id == nil then
