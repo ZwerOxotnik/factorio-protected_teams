@@ -373,11 +373,14 @@ function remove_team_data(force_index, is_force_exist)
 end
 
 
+local _render_tick = -1
 ---@param entity LuaEntity
 ---@param player LuaPlayer?
 local function destroy_entity(entity, player)
-	if player then
-		player.create_local_flying_text(_flying_anti_build_text_param)
+	if player and player.valid then
+		if _render_tick ~= game.tick then
+			player.create_local_flying_text(_flying_anti_build_text_param)
+		end
 		player.mine_entity(entity, true) -- forced mining
 		return
 	end
@@ -620,8 +623,6 @@ M.on_built_entity = function(event)
 	local surface = entity.surface
 	local bases_position = _main_bases[surface.index]
 	if bases_position == nil then return end
-	local player = game.get_player(event.player_index)
-	if not (player and player.valid) then return end
 
 	local force = entity.force
 	local entity_force_index = force.index
@@ -638,9 +639,7 @@ M.on_built_entity = function(event)
 		local ydiff = ent_y - base_position[2]
 		-- Destroy if in radius
 		if (xdiff * xdiff + ydiff * ydiff)^0.5 <= radius_protection then
-			entity.destroy(DESTROY_PARAM)
-			-- Show warning text
-			player.create_local_flying_text(_flying_anti_build_text_param)
+			destroy_entity(entity, game.get_player(event.player_index))
 			return
 		end
 		::continue::
@@ -947,6 +946,9 @@ local function add_remote_interface()
 	remote.add_interface("protected_teams", {
 		get_mod_data = function() return _mod_data end,
 		get_internal_data = function(name) return _mod_data[name] end,
+		change_setting = function(type, name, value)
+			settings[type][name] = {value = value}
+		end,
 		clear_invalid_data = clear_invalid_data,
 		clear_invalid_forces = clear_invalid_forces,
 		init_team_data = init_team_data,
