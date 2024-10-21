@@ -579,7 +579,7 @@ end
 
 ---@param event on_robot_built_entity
 M.on_robot_built_entity = function(event)
-	local entity = event.created_entity
+	local entity = event.entity
 	if not entity.valid then return end
 	local surface = entity.surface
 	local bases_position = _main_bases[surface.index]
@@ -617,7 +617,7 @@ end
 
 ---@param event on_built_entity
 M.on_built_entity = function(event)
-	local entity = event.created_entity
+	local entity = event.entity
 	if not entity.valid then return end
 	local surface = entity.surface
 	local bases_position = _main_bases[surface.index]
