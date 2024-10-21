@@ -91,8 +91,7 @@ local call = remote.call
 local cos = math.cos
 local sin = math.sin
 local atan2 = math.atan2
-local is_valid_render = rendering.is_valid
-local set_render_radius = rendering.set_radius
+local get_render_object_by_id = rendering.get_object_by_id
 local print_to_rcon = rcon.print
 local DESTROY_PARAM = {raise_destroy = true} --[[@as LuaEntity.destroy_param]]
 local _flying_anti_build_text_param = {
@@ -164,7 +163,7 @@ end
 ---@param receiver table?
 ---@return boolean
 function check_local_and_global_data(local_data, global_data_name, receiver)
-	if (type(global_data_name) == "string" and local_data ~= global.PTZO[global_data_name]) then
+	if (type(global_data_name) == "string" and local_data ~= storage.PTZO[global_data_name]) then
 		local message = string.format("!WARNING! Desync has been detected in __%s__ %s. Please report and send log files to %s and try to load your game again or use /sync", script.mod_name, "mod_data[\"" .. global_data_name .. "\"]", "ZwerOxotnik")
 		log(message)
 		if game and (game.is_multiplayer() == false or receiver) then
@@ -293,27 +292,27 @@ function update_bases_rendering()
 
 		local enemies, neutrals, allies = get_forces_by_relations(game.forces[force_index])
 		local id = ids[2]
-		if id and is_valid_render(id) then
+		if id and get_render_object_by_id(id).valid then
 			rendering.set_visible(id, (#enemies ~= 0))
 		end
 		id = ids[3]
-		if id and is_valid_render(id) then
+		if id and get_render_object_by_id(id).valid then
 			rendering.set_visible(id, (#neutrals ~= 0))
 		end
 		id = ids[4]
-		if id and is_valid_render(id) then
+		if id and get_render_object_by_id(id).valid then
 			rendering.set_visible(id, (#allies ~= 0))
 		end
 		id = ids[6]
-		if id and is_valid_render(id) then
+		if id and get_render_object_by_id(id).valid then
 			rendering.set_visible(id, (#enemies ~= 0))
 		end
 		id = ids[7]
-		if id and is_valid_render(id) then
+		if id and get_render_object_by_id(id).valid then
 			rendering.set_visible(id, (#neutrals ~= 0))
 		end
 		id = ids[8]
-		if id and is_valid_render(id) then
+		if id and get_render_object_by_id(id).valid then
 			rendering.set_visible(id, (#allies ~= 0))
 		end
 	    ::continue::
@@ -341,7 +340,7 @@ function destroy_team_base_rendering(force_index)
 		local id = rendering_ids[i]
 		if id == nil then
 			break
-		elseif is_valid_render(id) then
+		elseif get_render_object_by_id(id) then
 			rendering.destroy(id)
 		end
 	end
@@ -412,7 +411,7 @@ function disable_protection(force_index, is_forced)
 		local id = rendering_ids[i]
 		if id == nil then
 			break
-		elseif is_valid_render(id) then
+		elseif get_render_object_by_id(id) then
 			rendering.destroy(id)
 		end
 	end
@@ -442,7 +441,7 @@ function enable_protection(force_index, duration_in_ticks)
 		local id = rendering_ids[i]
 		if id == nil then
 			break
-		elseif is_valid_render(id) then
+		elseif get_render_object_by_id(id) then
 			rendering.destroy(id)
 		end
 	end
@@ -461,19 +460,19 @@ function enable_protection(force_index, duration_in_ticks)
 		width   = 6,
 		draw_on_ground = true
 	} --[[@as LuaRendering.draw_circle_param]]
-	_main_base_rendering[force_index][5] = rendering.draw_circle(render_data)
+	_main_base_rendering[force_index][5] = rendering.draw_circle(render_data).id
 	render_data.color   = {1, 0, 0}
 	render_data.forces  = enemies
 	render_data.visible = (#enemies ~= 0)
-	_main_base_rendering[force_index][6] = rendering.draw_circle(render_data)
+	_main_base_rendering[force_index][6] = rendering.draw_circle(render_data).id
 	render_data.color   = {1, 1, 1}
 	render_data.forces  = neutrals
 	render_data.visible = (#neutrals ~= 0)
-	_main_base_rendering[force_index][7] = rendering.draw_circle(render_data)
+	_main_base_rendering[force_index][7] = rendering.draw_circle(render_data).id
 	render_data.color   = {0, 1, 0}
 	render_data.forces  = allies
 	render_data.visible = (#allies ~= 0)
-	_main_base_rendering[force_index][8] = rendering.draw_circle(render_data)
+	_main_base_rendering[force_index][8] = rendering.draw_circle(render_data).id
 end
 
 
@@ -864,8 +863,11 @@ function expand_protections()
 			local id = rendering_ids[i]
 			if id == nil then
 				break
-			elseif is_valid_render(id) then
-				set_render_radius(id, radius_protection)
+			end
+
+			local object = get_render_object_by_id(id)
+			if object.valid then
+				object.radius = radius_protection
 			end
 		end
 		::continue::
@@ -961,7 +963,7 @@ local function add_remote_interface()
 end
 
 local function link_data()
-	_mod_data = global.PTZO
+	_mod_data = storage.PTZO
 	_vehicles_with_player = _mod_data.vehicles_with_player
 	_forced_protected_teams = _mod_data.forced_protected_teams
 	_protection_radius = _mod_data.radius_protection
@@ -976,8 +978,8 @@ local function link_data()
 end
 
 local function update_global_data()
-	global.PTZO = global.PTZO or {}
-	_mod_data = global.PTZO
+	storage.PTZO = storage.PTZO or {}
+	_mod_data = storage.PTZO
 	_mod_data.vehicles_with_player = _mod_data.vehicles_with_player or {}
 	_mod_data.planned_disabled_protection = _mod_data.planned_disabled_protection or {}
 	_mod_data.forced_protected_teams = _mod_data.forced_protected_teams or {}
@@ -1084,19 +1086,19 @@ do
 				} --[[@as LuaRendering.draw_circle_param]]
 				local enemies, neutrals, allies = get_forces_by_relations(game.forces[force_index])
 				_main_base_rendering[force_index] = {nil,nil,nil,nil,nil,nil,nil,nil}
-				_main_base_rendering[force_index][1] = rendering.draw_circle(render_data)
+				_main_base_rendering[force_index][1] = rendering.draw_circle(render_data).id
 				render_data.color   = {1, 0, 0, 0.5}
 				render_data.forces  = enemies
 				render_data.visible = (#enemies ~= 0)
-				_main_base_rendering[force_index][2] = rendering.draw_circle(render_data)
+				_main_base_rendering[force_index][2] = rendering.draw_circle(render_data).id
 				render_data.color   = {1, 1, 1, 0.5}
 				render_data.forces  = neutrals
 				render_data.visible = (#neutrals ~= 0)
-				_main_base_rendering[force_index][3] = rendering.draw_circle(render_data)
+				_main_base_rendering[force_index][3] = rendering.draw_circle(render_data).id
 				render_data.color   = {0, 1, 0, 0.5}
 				render_data.forces  = allies
 				render_data.visible = (#allies ~= 0)
-				_main_base_rendering[force_index][4] = rendering.draw_circle(render_data)
+				_main_base_rendering[force_index][4] = rendering.draw_circle(render_data).id
 
 				init_team_data(force_index)
 			end)
