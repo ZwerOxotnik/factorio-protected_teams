@@ -340,8 +340,10 @@ function destroy_team_base_rendering(force_index)
 		local id = rendering_ids[i]
 		if id == nil then
 			break
-		elseif get_render_object_by_id(id) then
-			rendering.destroy(id)
+		end
+		local render_object = get_render_object_by_id(id)
+		if render_object.valid then
+			render_object.destroy()
 		end
 	end
 end
@@ -411,8 +413,10 @@ function disable_protection(force_index, is_forced)
 		local id = rendering_ids[i]
 		if id == nil then
 			break
-		elseif get_render_object_by_id(id) then
-			rendering.destroy(id)
+		end
+		local render_object = get_render_object_by_id(id)
+		if render_object.valid then
+			render_object.destroy()
 		end
 	end
 end
@@ -441,8 +445,10 @@ function enable_protection(force_index, duration_in_ticks)
 		local id = rendering_ids[i]
 		if id == nil then
 			break
-		elseif get_render_object_by_id(id) then
-			rendering.destroy(id)
+		end
+		local render_object = get_render_object_by_id(id)
+		if render_object.valid then
+			render_object.destroy()
 		end
 	end
 
@@ -865,9 +871,9 @@ function expand_protections()
 				break
 			end
 
-			local object = get_render_object_by_id(id)
-			if object.valid then
-				object.radius = radius_protection
+			local render_object = get_render_object_by_id(id)
+			if render_object.valid then
+				render_object.radius = radius_protection
 			end
 		end
 		::continue::
