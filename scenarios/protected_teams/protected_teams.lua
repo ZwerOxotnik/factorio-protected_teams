@@ -228,20 +228,20 @@ end
 
 ---@param name string
 function getRconData(name)
-	print_to_rcon(game.table_to_json(_mod_data[name]))
+	print_to_rcon(helpers.table_to_json(_mod_data[name]))
 end
 
 ---@param name string
 ---@param force LuaForce
 function getRconForceData(name, force)
 	if not force.valid then return end
-	print_to_rcon(game.table_to_json(_mod_data[name][force.index]))
+	print_to_rcon(helpers.table_to_json(_mod_data[name][force.index]))
 end
 
 ---@param name string
 ---@param force_index integer
 function getRconForceDataByIndex(name, force_index)
-	print_to_rcon(game.table_to_json(_mod_data[name][force_index]))
+	print_to_rcon(helpers.table_to_json(_mod_data[name][force_index]))
 end
 
 --#endregion
@@ -249,7 +249,7 @@ end
 
 --#region utils
 
-
+-- local __simple_vehicles = {car = true, ["spider-vehicle"] = true}
 function check_vehicles_data()
 	for i=#_vehicles_with_player, 1, -1 do
 		local entity = _vehicles_with_player[i]
@@ -257,11 +257,19 @@ function check_vehicles_data()
 			tremove(_vehicles_with_player, i)
 			goto continue
 		end
-		local driver = entity.get_driver()
-		if driver and driver.valid and driver.is_player() then
-			goto continue
+		local driver, passenger
+
+		if entity.train then
+			passenger = entity.train.passengers[1]
+		-- elseif __simple_vehicles[entity.type] then
+		else
+
+			driver = entity.get_driver()
+			if driver and driver.valid and driver.is_player() then
+				goto continue
+			end
+			passenger = entity.get_passenger()
 		end
-		local passenger = entity.get_passenger()
 		if passenger and passenger.valid and passenger.is_player() then
 			goto continue
 		end
@@ -711,8 +719,7 @@ end
 
 ---@param event on_player_driving_changed_state
 M.on_player_driving_changed_state = function(event)
-	local player_index = event.player_index
-	local player = game.get_player(player_index)
+	local player = game.get_player(event.player_index)
 	if not (player and player.valid) then return end
 
 	check_vehicles_data()
